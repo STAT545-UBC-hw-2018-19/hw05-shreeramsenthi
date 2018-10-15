@@ -115,7 +115,7 @@ pop_plot(song2)
 
 # Part 3: Visualization Design
 
-While I suppose I could remake a plot I have already made, @MielleM mentioned in [her review](https://github.com/STAT545-UBC-students/hw04-shreeramsenthi/issues/1) of my last homework submission that mapping is a reasonable option in `ggplot2`. Well that's news to me! So why not try it out here since the `singer` dataset provides co-ordinates for different artists. More specifically, let's visualize where most artists are from.
+While I suppose I could remake a plot I have already made, [MielleM](https://github.com/MielleM) mentioned in [her review](https://github.com/STAT545-UBC-students/hw04-shreeramsenthi/issues/1) of my last homework submission that mapping is a reasonable option in `ggplot2`. Well that's news to me! So why not try it out here since the `singer` dataset provides co-ordinates for different artists. More specifically, let's visualize where most artists are from.
 
 ## Double Check Assumptions
 
@@ -123,11 +123,11 @@ Before we begin, let's double check that there's only ever one pair of coordinat
 
 ```{r testCoord}
 song %>%
-  filter(!is.na(lat)) %>%                                 # Let's start by removing all rows with coordinates
+  filter(!is.na(lat)) %>%                                 # Let's start by removing all rows without coordinates
   mutate(lat = factor(lat), long = factor(long)) %>%      #One way to test for uniqueness is counting factor levels
   group_by(artist) %>%
   summarize(nlat = lat %>% droplevels %>% nlevels,        # You can use pipes in argument definitions too!
-            nlong = long %>% droplevels %>% nlevels) %T>% # This is the T-pipe, it let's you output things out in the middle of a pipe chain
+            nlong = long %>% droplevels %>% nlevels) %T>% # This is the T-pipe, it let's you output things in the middle of a pipe chain
   {
     writeLines("\nLet's see how many unique latitudes and longitudes are associated with each artist: ")
     print(.)
