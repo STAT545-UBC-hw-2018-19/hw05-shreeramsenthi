@@ -320,7 +320,7 @@ ggsave("figure/hex_map.svg", hex_map) # requires package `svglite` to save as sv
 ## Saving 7 x 7 in image
 ```
 
-![Figure 2: A vectorized heat map of artists from the British Isles]("https://raw.githubusercontent.com/STAT545-UBC-students/hw05-shreeramsenthi/master/figure/hex_map.svg")
+![Figure 2: A vectorized heat map of artists from the British Isles]("https://raw.githubusercontent.com/STAT545-UBC-students/hw05-shreeramsenthi/master/figure/hex_map.svg?sanitize=true")
 
 Oddly, it seems like the hexagons don't render well in svg format, but sure enough the plot is indeed avector image.
 
