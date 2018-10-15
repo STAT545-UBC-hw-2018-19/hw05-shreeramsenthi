@@ -202,7 +202,7 @@ Now finally let's save the plot to a file using `ggsave`.
 ggsave("figure/hex_map.png", hex_map)
 ```
 
-And now we can use standard `markdown` to show the image here with a caption:
+And now we can use standard `markdown` to show the image here:
 
 ![Figure 1](https://raw.githubusercontent.com/STAT545-UBC-students/hw05-shreeramsenthi/master/figure/hex_map.png)
 

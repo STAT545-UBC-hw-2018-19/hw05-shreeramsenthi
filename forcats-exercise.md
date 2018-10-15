@@ -305,7 +305,7 @@ ggsave("figure/hex_map.png", hex_map)
 ## Saving 7 x 7 in image
 ```
 
-And now we can use standard `markdown` to show the image here with a caption:
+And now we can use standard `markdown` to show the image here:
 
 ![Figure 1](https://raw.githubusercontent.com/STAT545-UBC-students/hw05-shreeramsenthi/master/figure/hex_map.png)
 
