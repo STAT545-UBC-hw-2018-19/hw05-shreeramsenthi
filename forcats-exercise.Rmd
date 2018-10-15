@@ -1,0 +1,218 @@
+---
+title: "Factor and figure management"
+author: Shreeram Senthivasan
+output: github_document
+---
+
+```{r libraries, include = F}
+library(tidyverse)
+library(singer)
+library(knitr)
+library(maps)
+library(svglite)
+```
+
+# Intro
+
+For this assignment, we will be exploring how to manipulate factors, improve figures and work with file input and output. To this end, I will be using the datasets compiled and provided by Joey Bernhardt in the [`singer`](https://github.com/JoeyBernhardt/singer) package.
+
+# Part 1: Factor management
+
+## Setup
+
+Before we begin, let's make a more manageable subset of the `singer` dataset, rename some variables, and convert relevant variables to factors.
+
+```{r createSubset}
+song <- singer_locations %>%
+  select(title,
+         album = release,
+         artist = artist_name,
+         year,
+         popularity = artist_hotttnesss,
+         lat = latitude,
+         long = longitude) %>%
+  mutate(album = as_factor(album),
+         artist = as_factor(artist),
+         year = factor(year))
+
+song %>%
+  head %>%
+  kable(col.names = c("Song Title", "Album", "Artist", "Year", "Popularity", "Latitude", "Longitude"))
+```
+
+Notice that the song titles shouldn't be coerced to a factor since they are all unique, unlike the other three variables we converted. Similarly `popularity`, `latitude`, and `longitude` should not be treated as factors since they are continuous, unlike `year`.
+
+## Quality control
+
+Let's check the levels of `year` to see the scope of the dataset:
+
+```{r levelsYear}
+levels(song$year)
+```
+
+Looks like there was a typo and some entries have a release year of 0. Let's filter out these results:
+
+```{r filterYear}
+song  <- filter(song, year != "0") %>%
+  mutate(year = fct_drop(year)) # Don't forget to drop unused levels if you don't want them around
+levels(song$year) # Sure enough, the unwanted levels are gone
+```
+
+## Reordering factors
+
+Perfect, and conveniently the levels of `year` are sorted alphabetically, which is probably what we would want if we were plotting something against `year`. Our other factors (`artist` and `album`) however do not have such a natural ordering. Instead, we can sort them based on another variable, such as the popularity of the artist.
+
+```{r reorderArtistAlbum}
+song <- song %>%
+  mutate(artist = fct_reorder(artist, -popularity), # Negatives are a convenient way of reversing the sort order
+         album = fct_reorder(album, -popularity)) # Here I use it since I want more popular artists first
+```
+
+Notice that rearranging the rows of the dataframe won't help since it doesn't change the underlying integers that the factors code for. But did this reordering do what we want? Let's use a plot to check.
+
+```{r reorderedPlots}
+#Since we will be making a similar plot a couple times, let's make a function out of it!
+pop_plot <- function(df){
+  ggplot(df, aes(popularity, artist)) +
+    geom_point(alpha = 0.2, size = 0.8) +
+    theme_classic() +
+    labs(x = "Popularity", y = "Artist, Reordered by Popularity") +
+    theme(axis.text.y = element_blank(), #Remove the long list of artist names
+          axis.ticks.y = element_blank() #and their corresponding ticks
+          )
+}
+
+pop_plot(song)
+```
+
+Sure enough, it appears that `artist` (and presumably `album`) have been reordered in a more meaningful way.
+
+# Part 2: File I/O
+
+Let's try saving and retrieving our subsetted dataset with the reordered factors. A standard option would be to write to csv.
+
+```{r ioCSV}
+write_csv(song, "song.csv")
+song2 <- read_csv("song.csv")
+
+identical(song, song2) # Are they the same?
+
+pop_plot(song2)
+```
+
+As we can see, saving the dataset to csv does not allow us to retrieve factor information. This makes sense since the csv format does not have an obvious way of encoding both a value and a level to a single observation.
+
+Instead, if we need to preserve factor information, we can use the R data structure format or RDS.
+
+```{r ioRDS}
+saveRDS(song, "song.RDS")
+song2 = readRDS("song.RDS")
+
+identical(song, song2) # Are they the same?
+
+pop_plot(song2)
+```
+
+# Part 3: Visualization Design
+
+While I suppose I could remake a plot I have already made, @MielleM mentioned in [her review](https://github.com/STAT545-UBC-students/hw04-shreeramsenthi/issues/1) of my last homework submission that mapping is a reasonable option in `ggplot2`. Well that's news to me! So why not try it out here since the `singer` dataset provides co-ordinates for different artists. More specifically, let's visualize where most artists are from.
+
+## Double Check Assumptions
+
+Before we begin, let's double check that there's only ever one pair of coordinates for each artist:
+
+```{r testCoord}
+song %>%
+  filter(!is.na(lat)) %>%                                 # Let's start by removing all rows with coordinates
+  mutate(lat = factor(lat), long = factor(long)) %>%      #One way to test for uniqueness is counting factor levels
+  group_by(artist) %>%
+  summarize(nlat = lat %>% droplevels %>% nlevels,        # You can use pipes in argument definitions too!
+            nlong = long %>% droplevels %>% nlevels) %T>% # This is the T-pipe, it let's you output things out in the middle of a pipe chain
+  {
+    writeLines("\nLet's see how many unique latitudes and longitudes are associated with each artist: ")
+    print(.)
+  } %>%
+  filter(nlat != 1 | nlong != 1) %>%
+  {
+    writeLines("\nLet's use filter to see which artists have more than one unique pair of coordinates:")
+    print(.)
+  }
+```
+
+And sure enough, none of the artists have more than one unique pair of coordinates. Accordingly, we can summarize the dataset by artist and plot where most artists are from.
+
+## Mapping
+
+Let's get right to it!
+
+```{r mapping}
+artist_by_location <- song %>%
+  group_by(artist) %>%
+  summarize(lat = first(lat), long = first(long)) %>% # This is only valid since we know that coordinates are unique per artist
+  filter(!is.na(lat))
+
+artist_by_location %>%
+  ggplot(aes(long, lat)) +
+    geom_polygon(data = map_data("world"), aes(group = group), fill = "grey70") + # First we plot the map data from the package `maps`
+    geom_point(size = 0.2, alpha = 0.2, colour = "red") + # Then we overlay the points
+    theme_void() + # Let's get rid of the axes
+    coord_fixed() # And fix the scale for the coordinates
+```
+
+Well that's certainly a start, but it's hard to see what going on when we try to look at the world as a whole. Let's zoom in on the British Isles and try again.
+
+```{r mapUK}
+#Let's store the map data into an easier variable to call multiple times
+brit_isle <- map_data('worldHires', c('UK', 'Ireland', 'Isle of Man','Isle of Wight', 'Wales:Anglesey')) %>%
+  filter(lat > 50, lat < 60, long > -20, long < 3)
+
+brit_isle_artists <- artist_by_location %>%
+  filter(lat > 50, lat < 60, long > -20, long < 2) # Filter out artists from other countries
+
+brit_isle_artists %>%
+  ggplot(aes(long, lat)) + #As before
+    geom_polygon(data = brit_isle, aes(group = group), fill = "grey70") +
+    geom_point(alpha = 0.2, colour = "red") +
+    theme_void() +
+    coord_fixed(1.3)
+```
+
+While this is much clearer, we still have not completely overcome the issue of overplotting. Although a little clunky, let's try using hexplots overlaid onto a map.
+
+```{r mapHex}
+hex_map <- brit_isle_artists %>%
+  ggplot(aes(long, lat)) + #As before
+    geom_polygon(data = brit_isle, aes(group = group), fill = "grey70") +
+    stat_binhex(aes(fill=log(..count..)), bins = 50, alpha = 0.8, colour = "black") +
+    scale_fill_gradient(low = "grey70", high = "red") +
+    theme_void() +
+    labs(fill = "Log Count\nof Artists") +
+    coord_fixed(1.3)
+
+hex_map
+```
+
+I'm actually pretty happy with that. Let's stop here.
+
+# Part 4: Writing figures to file
+
+Now finally let's save the plot to a file using `ggsave`.
+
+```{r ggsave}
+ggsave("figure/hex_map.png", hex_map)
+```
+
+And now we can use standard `markdown` to show the image here with a caption:
+
+![Figure 1: A rasterized heat map of artists from the British Isles](figure/hex_map.png)
+
+But if you are publishing to the web (as we are here), and do not know the resolution the audience will view your document in, in can be useful to export graphics to vector formats when possible. This will allow readers to zoom in indefinitely without encountering the dreaded blocky graphics. Let's try it here:
+
+```{r ggsaveVect}
+ggsave("figure/hex_map.svg", hex_map) # requires package `svglite` to save as svg
+```
+
+![Figure 2: A vectorized heat map of artists from the British Isles](figure/hex_map.svg)
+
+Oddly, it seems like the hexagons don't render perfectly in svg format, but sure enough the plot is indeed avector image.
+
