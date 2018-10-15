@@ -307,7 +307,7 @@ ggsave("figure/hex_map.png", hex_map)
 
 And now we can use standard `markdown` to show the image here with a caption:
 
-![Figure 1: A rasterized heat map of artists from the British Isles]("https://raw.githubusercontent.com/STAT545-UBC-students/hw05-shreeramsenthi/master/figure/hex_map.png")
+![Figure 1](https://raw.githubusercontent.com/STAT545-UBC-students/hw05-shreeramsenthi/master/figure/hex_map.png)
 
 But if you are publishing to the web (as we are here), and do not know the resolution the audience will view your document in, in can be useful to export graphics to vector formats when possible. This will allow readers to zoom in indefinitely without encountering the dreaded blocky graphics. Let's try it here:
 
@@ -320,7 +320,7 @@ ggsave("figure/hex_map.svg", hex_map) # requires package `svglite` to save as sv
 ## Saving 7 x 7 in image
 ```
 
-![Figure 2: A vectorized heat map of artists from the British Isles]("https://raw.githubusercontent.com/STAT545-UBC-students/hw05-shreeramsenthi/master/figure/hex_map.svg?sanitize=true")
+![Figure 2: A vectorized heat map of artists from the British Isles](https://raw.githubusercontent.com/STAT545-UBC-students/hw05-shreeramsenthi/master/figure/hex_map.svg?sanitize=true)
 
 Oddly, it seems like the hexagons don't render well in svg format, but sure enough the plot is indeed avector image.
 
