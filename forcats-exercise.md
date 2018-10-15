@@ -243,7 +243,7 @@ artist_by_location <- song %>%
 
 artist_by_location %>%
   ggplot(aes(long, lat)) +
-    geom_polygon(data = map_data("world"), aes(group = group), fill = "grey70") + # First we plot the map data from the package `maps`
+    geom_polygon(data = map_data("world"), aes(group = group), fill = "grey70") + # First we plot the map data from the package `mapdata`
     geom_point(size = 0.2, alpha = 0.2, colour = "red") + # Then we overlay the points
     theme_void() + # Let's get rid of the axes
     coord_fixed() # And fix the scale for the coordinates
@@ -258,13 +258,7 @@ Well that's certainly a start, but it's hard to see what going on when we try to
 #Let's store the map data into an easier variable to call multiple times
 brit_isle <- map_data('worldHires', c('UK', 'Ireland', 'Isle of Man','Isle of Wight', 'Wales:Anglesey')) %>%
   filter(lat > 50, lat < 60, long > -20, long < 3)
-```
 
-```
-## Error: 'worldHiresMapEnv' is not an exported object from 'namespace:maps'
-```
-
-```r
 brit_isle_artists <- artist_by_location %>%
   filter(lat > 50, lat < 60, long > -20, long < 2) # Filter out artists from other countries
 
@@ -276,9 +270,7 @@ brit_isle_artists %>%
     coord_fixed(1.3)
 ```
 
-```
-## Error in fortify(data): object 'brit_isle' not found
-```
+![plot of chunk mapUK](figure/mapUK-1.png)
 
 While this is much clearer, we still have not completely overcome the issue of overplotting. Although a little clunky, let's try using hexplots overlaid onto a map.
 
@@ -292,19 +284,11 @@ hex_map <- brit_isle_artists %>%
     theme_void() +
     labs(fill = "Log Count\nof Artists") +
     coord_fixed(1.3)
-```
 
-```
-## Error in fortify(data): object 'brit_isle' not found
-```
-
-```r
 hex_map
 ```
 
-```
-## Error in eval(expr, envir, enclos): object 'hex_map' not found
-```
+![plot of chunk mapHex](figure/mapHex-1.png)
 
 I'm actually pretty happy with that. Let's stop here.
 
@@ -321,13 +305,9 @@ ggsave("figure/hex_map.png", hex_map)
 ## Saving 7 x 7 in image
 ```
 
-```
-## Error in grid.draw(plot): object 'hex_map' not found
-```
-
 And now we can use standard `markdown` to show the image here with a caption:
 
-![Figure 1: A rasterized heat map of artists from the British Isles](figure/hex_map.png)
+![Figure 1: A rasterized heat map of artists from the British Isles]("https://raw.githubusercontent.com/STAT545-UBC-students/hw05-shreeramsenthi/master/figure/hex_map.png")
 
 But if you are publishing to the web (as we are here), and do not know the resolution the audience will view your document in, in can be useful to export graphics to vector formats when possible. This will allow readers to zoom in indefinitely without encountering the dreaded blocky graphics. Let's try it here:
 
@@ -340,11 +320,7 @@ ggsave("figure/hex_map.svg", hex_map) # requires package `svglite` to save as sv
 ## Saving 7 x 7 in image
 ```
 
-```
-## Error in grid.draw(plot): object 'hex_map' not found
-```
+![Figure 2: A vectorized heat map of artists from the British Isles]("https://raw.githubusercontent.com/STAT545-UBC-students/hw05-shreeramsenthi/master/figure/hex_map.svg")
 
-![Figure 2: A vectorized heat map of artists from the British Isles](figure/hex_map.svg)
-
-Oddly, it seems like the hexagons don't render perfectly in svg format, but sure enough the plot is indeed avector image.
+Oddly, it seems like the hexagons don't render well in svg format, but sure enough the plot is indeed avector image.
 

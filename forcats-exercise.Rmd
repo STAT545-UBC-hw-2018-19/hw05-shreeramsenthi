@@ -8,7 +8,7 @@ output: github_document
 library(tidyverse)
 library(singer)
 library(knitr)
-library(maps)
+library(mapdata)
 library(svglite)
 ```
 
@@ -153,7 +153,7 @@ artist_by_location <- song %>%
 
 artist_by_location %>%
   ggplot(aes(long, lat)) +
-    geom_polygon(data = map_data("world"), aes(group = group), fill = "grey70") + # First we plot the map data from the package `maps`
+    geom_polygon(data = map_data("world"), aes(group = group), fill = "grey70") + # First we plot the map data from the package `mapdata`
     geom_point(size = 0.2, alpha = 0.2, colour = "red") + # Then we overlay the points
     theme_void() + # Let's get rid of the axes
     coord_fixed() # And fix the scale for the coordinates
@@ -204,7 +204,7 @@ ggsave("figure/hex_map.png", hex_map)
 
 And now we can use standard `markdown` to show the image here with a caption:
 
-![Figure 1: A rasterized heat map of artists from the British Isles](figure/hex_map.png)
+![Figure 1: A rasterized heat map of artists from the British Isles]("https://raw.githubusercontent.com/STAT545-UBC-students/hw05-shreeramsenthi/master/figure/hex_map.png")
 
 But if you are publishing to the web (as we are here), and do not know the resolution the audience will view your document in, in can be useful to export graphics to vector formats when possible. This will allow readers to zoom in indefinitely without encountering the dreaded blocky graphics. Let's try it here:
 
@@ -212,7 +212,7 @@ But if you are publishing to the web (as we are here), and do not know the resol
 ggsave("figure/hex_map.svg", hex_map) # requires package `svglite` to save as svg
 ```
 
-![Figure 2: A vectorized heat map of artists from the British Isles](figure/hex_map.svg)
+![Figure 2: A vectorized heat map of artists from the British Isles]("https://raw.githubusercontent.com/STAT545-UBC-students/hw05-shreeramsenthi/master/figure/hex_map.svg")
 
-Oddly, it seems like the hexagons don't render perfectly in svg format, but sure enough the plot is indeed avector image.
+Oddly, it seems like the hexagons don't render well in svg format, but sure enough the plot is indeed avector image.
 
