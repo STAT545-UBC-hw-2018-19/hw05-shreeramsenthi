@@ -152,14 +152,12 @@ artist_by_location <- song %>%
   summarize(lat = first(lat), long = first(long)) %>% # This is only valid since we know that coordinates are unique per artist
   filter(!is.na(lat))
 
-p <- artist_by_location %>%
+artist_by_location %>%
   ggplot(aes(long, lat)) +
     geom_polygon(data = map_data("world"), aes(group = group), fill = "grey70") + # First we plot the map data from the package `mapdata`
     geom_point(size = 0.2, alpha = 0.2, colour = "red") + # Then we overlay the points
     theme_void() + # Let's get rid of the axes
     coord_fixed() # And fix the scale for the coordinates
-
-ggplotly(p)
 ```
 
 Well that's certainly a start, but it's hard to see trends when we try to look at the world as a whole. Not to mention, many areas are completely overplotted. Let's zoom in on the British Isles and try again.
