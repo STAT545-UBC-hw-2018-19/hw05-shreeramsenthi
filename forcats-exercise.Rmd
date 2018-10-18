@@ -10,6 +10,7 @@ library(singer)
 library(knitr)
 library(mapdata)
 library(svglite)
+library(plotly)
 ```
 
 # Intro
@@ -151,15 +152,17 @@ artist_by_location <- song %>%
   summarize(lat = first(lat), long = first(long)) %>% # This is only valid since we know that coordinates are unique per artist
   filter(!is.na(lat))
 
-artist_by_location %>%
+p <- artist_by_location %>%
   ggplot(aes(long, lat)) +
     geom_polygon(data = map_data("world"), aes(group = group), fill = "grey70") + # First we plot the map data from the package `mapdata`
     geom_point(size = 0.2, alpha = 0.2, colour = "red") + # Then we overlay the points
     theme_void() + # Let's get rid of the axes
     coord_fixed() # And fix the scale for the coordinates
+
+ggplotly(p)
 ```
 
-Well that's certainly a start, but it's hard to see what going on when we try to look at the world as a whole. Let's zoom in on the British Isles and try again.
+Well that's certainly a start, but it's hard to see trends when we try to look at the world as a whole. Not to mention, many areas are completely overplotted. Let's zoom in on the British Isles and try again.
 
 ```{r mapUK}
 #Let's store the map data into an easier variable to call multiple times
@@ -214,5 +217,5 @@ ggsave("figure/hex_map.svg", hex_map) # requires package `svglite` to save as sv
 
 ![Figure 2: A vectorized heat map of artists from the British Isles](https://raw.githubusercontent.com/STAT545-UBC-students/hw05-shreeramsenthi/master/figure/hex_map.svg?sanitize=true)
 
-Oddly, it seems like the hexagons don't render well in svg format, but sure enough the plot is indeed avector image.
+Oddly, it seems like the rendering of the hexagons and the fill legend didn't work. I've messed around with it a while but I can't seem to figure out why. Well, at least the plot *is* a vector image.
 
