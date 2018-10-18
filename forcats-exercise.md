@@ -251,9 +251,7 @@ p <- artist_by_location %>%
 ggplotly(p)
 ```
 
-```
-## Error in loadNamespace(name): there is no package called 'webshot'
-```
+![plot of chunk mapping](figure/mapping-1.png)
 
 Well that's certainly a start, but it's hard to see trends when we try to look at the world as a whole. Not to mention, many areas are completely overplotted. Let's zoom in on the British Isles and try again.
 
