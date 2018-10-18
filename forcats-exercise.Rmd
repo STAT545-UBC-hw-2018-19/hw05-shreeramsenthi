@@ -9,8 +9,9 @@ library(tidyverse)
 library(singer)
 library(knitr)
 library(mapdata)
+library(scales)
+library(RColorBrewer)
 library(svglite)
-library(plotly)
 ```
 
 # Intro
@@ -184,10 +185,14 @@ While this is much clearer, we still have not completely overcome the issue of o
 hex_map <- brit_isle_artists %>%
   ggplot(aes(long, lat)) + #As before
     geom_polygon(data = brit_isle, aes(group = group), fill = "grey70") +
-    stat_binhex(aes(fill=log(..count..)), bins = 50, alpha = 0.8, colour = "black") +
-    scale_fill_gradient(low = "grey70", high = "red") +
+    geom_hex(bins = 60, alpha = 0.6, colour = "black") +
+    scale_fill_viridis_c(
+        trans   = "log10",
+        breaks  = 10^(0.5*(0:10)),
+        labels  = comma_format(),
+        option = "D") +
     theme_void() +
-    labs(fill = "Log Count\nof Artists") +
+    labs(fill = "Count of Artists") +
     coord_fixed(1.3)
 
 hex_map
